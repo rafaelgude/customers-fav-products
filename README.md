@@ -1,9 +1,9 @@
-### Linguagem e banco de dados utilizados
+# Linguagem e banco de dados utilizados
 
 * Java 11
 * MySQL na versão "10.4.20-MariaDB"
 
-### Documentação
+# Documentação
 
 Documentação da API: http://localhost:8080/api/swagger-ui/
 Login no endpoint: http://localhost:8080/api/login
@@ -18,10 +18,10 @@ Para fins de facilidade na execução da aplicação para avaliação, ao execut
 
 Email | Password | Permissões
 ------------ | ------------- | -------------
-admin@example.com | 123 | Todas requisições`
+admin@example.com | 123 | Todas requisições
 user@example.com | 123 | Apenas requisições GET
 
-### Instalação
+# Instalação
 
 1. Faça o clone desse repositório
 2. Importe o projeto na sua IDE de preferência (para desenvolvimento foi utilizado o Intellij IDEA Community 2021.1.3)
