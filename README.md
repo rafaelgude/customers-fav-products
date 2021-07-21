@@ -17,7 +17,7 @@ Para realizar login no endpoint acima, é necessário enviar uma requisição PO
 Para fins de facilidade na execução da aplicação para avaliação, ao executar o projeto, o banco de dados é automaticamente criado, junto com sua estrutura pelo arquivo schema.sql e dados de 2 usuários inicias pelo arquivo data.sql. Os dados dos usuários são:
 
 Email | Password | Permissões
------------- | -------------
+------------ | ------------- | -------------
 admin@example.com | 123 | Todas requisições`
 user@example.com | 123 | Apenas requisições GET
 
