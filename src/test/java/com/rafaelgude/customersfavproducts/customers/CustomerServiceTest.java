@@ -2,19 +2,22 @@ package com.rafaelgude.customersfavproducts.customers;
 
 import com.rafaelgude.customersfavproducts.exceptions.EntityNotFoundException;
 import com.rafaelgude.customersfavproducts.exceptions.NonUniqueEmailException;
+import com.rafaelgude.customersfavproducts.products.ProductDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.rafaelgude.customersfavproducts.MockUtil.mockCustomer;
+import static com.rafaelgude.customersfavproducts.MockUtil.mockProdutoDTO;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +26,9 @@ public class CustomerServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
+
+    @Mock
+    private RestTemplate restTemplate;
 
     @InjectMocks
     private CustomerService customerService;
@@ -40,8 +46,6 @@ public class CustomerServiceTest {
     @Test
     void whenFindById_thenReturnCustomer() {
         var expected = mockCustomer();
-        expected.setId(1L);
-
         when(customerRepository.findById(anyLong())).thenReturn(Optional.of(expected));
 
         var actual = customerService.findById(1L);
@@ -58,7 +62,9 @@ public class CustomerServiceTest {
     @Test
     void givenCostumer_whenCreate_thenSaveCustomer() {
         var expected = mockCustomer();
-        when(customerRepository.saveAndFlush(any(Customer.class))).thenReturn(expected);
+        expected.setId(null);
+
+        when(customerRepository.save(any(Customer.class))).thenReturn(mockCustomer());
         when(customerRepository.existsByEmailAndIdNot(any(String.class), any(Long.class))).thenReturn(false);
 
         var actual = customerService.create(expected);
@@ -70,6 +76,8 @@ public class CustomerServiceTest {
     @Test
     void givenDuplicatedEmailCustomer_whenCreate_thenThrowNonUniqueEmailException() {
         var duplicatedEmailCustomer = mockCustomer();
+        duplicatedEmailCustomer.setId(null);
+
         when(customerRepository.existsByEmailAndIdNot(any(String.class), any(Long.class))).thenReturn(true);
 
         assertThrows(NonUniqueEmailException.class, () -> customerService.create(duplicatedEmailCustomer));
@@ -78,12 +86,10 @@ public class CustomerServiceTest {
     @Test
     void givenCostumer_whenUpdate_thenUpdateCustomer() {
         var oldCustomer = mockCustomer();
-        oldCustomer.setId(1L);
-
-        var newCustomer = Customer.builder().id(1L).name("Fulano").email("fulano@example.com").build();
+        var newCustomer = Customer.builder().id(1L).name("Jane Doe").email("janedoe@example.com").build();
 
         when(customerRepository.findById(anyLong())).thenReturn(Optional.of(oldCustomer));
-        when(customerRepository.saveAndFlush(any(Customer.class))).thenReturn(newCustomer);
+        when(customerRepository.save(any(Customer.class))).thenReturn(newCustomer);
         when(customerRepository.existsByEmailAndIdNot(any(String.class), any(Long.class))).thenReturn(false);
 
         var actual = customerService.update(1L, mockCustomer());
@@ -96,7 +102,6 @@ public class CustomerServiceTest {
     @Test
     void givenDuplicatedEmailCustomer_whenUpdate_thenThrowNonUniqueEmailException() {
         var customer = mockCustomer();
-        customer.setId(1L);
 
         when(customerRepository.findById(anyLong())).thenReturn(Optional.of(customer));
         when(customerRepository.existsByEmailAndIdNot(any(String.class), any(Long.class))).thenReturn(true);
@@ -110,6 +115,34 @@ public class CustomerServiceTest {
         doNothing().when(customerRepository).delete(any(Customer.class));
 
         assertDoesNotThrow(() -> customerService.delete(1L));
+    }
+
+    @Test
+    void whenAddFavoriteProducts_thenAddFavoriteProductsOfCustomer() {
+        var productDTO = mockProdutoDTO();
+        var customer = mockCustomer();
+
+        when(customerRepository.findById(anyLong())).thenReturn(Optional.of(customer));
+        when(restTemplate.getForObject(anyString(), eq(ProductDTO.class))).thenReturn(productDTO);
+        when(customerRepository.save(any(Customer.class))).thenReturn(customer);
+
+        customerService.addFavoriteProducts(1L, List.of(productDTO.getId()));
+
+        assertTrue(!customer.getFavoriteProductsId().isEmpty());
+    }
+
+    @Test
+    void whenFindByIdWithFavoriteProducts_thenReturnCustomerWithFavoriteProducts() {
+        var productDTO = mockProdutoDTO();
+        var customer = mockCustomer();
+        customer.setFavoriteProductsId(Set.of("h9f7s37v0h7d39n4n2m1"));
+
+        when(customerRepository.findById(anyLong())).thenReturn(Optional.of(customer));
+        when(restTemplate.getForObject(anyString(), eq(ProductDTO.class))).thenReturn(productDTO);
+
+        var customerWithFavoriteProductsDTO = customerService.findByIdWithFavoriteProducts(1L);
+
+        assertTrue(!customerWithFavoriteProductsDTO.getFavoriteProducts().isEmpty());
     }
 
 }

@@ -68,7 +68,7 @@ public class CustomerService {
             }
         });
 
-        customerRepository.saveAndFlush(customer);
+        customerRepository.save(customer);
     }
 
     public CustomerWithFavoriteProductsDTO findByIdWithFavoriteProducts(Long id) {
