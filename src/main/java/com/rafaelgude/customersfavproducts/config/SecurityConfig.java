@@ -42,7 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     };
 
     private static final String[] PRIVATE_MATCHERS = {
-            "/api/customers/**"
+            "/customers/**"
     };
 
     @Override
@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and()
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers(PUBLIC_MATCHERS).permitAll()
+                .antMatchers(HttpMethod.GET, PUBLIC_MATCHERS).permitAll()
                 .antMatchers(HttpMethod.GET, PRIVATE_MATCHERS).hasAnyRole("ADMIN", "USER")
                 .antMatchers(HttpMethod.POST, PRIVATE_MATCHERS).hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, PRIVATE_MATCHERS).hasRole("ADMIN")
